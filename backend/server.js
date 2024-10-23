@@ -7,6 +7,7 @@ const cors=require('cors')
 
 
 const indexRouter=require('./api/index')
+const ruleEngineRouter=require('./api/ruleEngine')
 
 //initialized express app
 const app=express()
@@ -24,6 +25,7 @@ app.use(cors())
 
 //for api routes
 app.use('/api',indexRouter)
+app.use('/api/rule-engine',ruleEngineRouter)
 
 
 
