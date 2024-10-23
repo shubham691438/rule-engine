@@ -4,6 +4,7 @@ const Parser = require('../utils/parser');
 const combineASTs = require('../utils/combineASTs');
 const evaluateAST = require('../utils/evaluateAST');
 const mongoose = require('mongoose');
+const Rule = require('../models/RuleModel');
 
 // Function to recursively save AST nodes to MongoDB
 const saveASTNode = async (astNode) => {
@@ -20,7 +21,10 @@ const saveASTNode = async (astNode) => {
 // Controller to parse and save AST from rule string
 const createRule = async (req, res) => {
   try {
-    const { rule } = req.body;
+    const { rule, name } = req.body;
+
+    const existingRule = await Rule.findOne({name});
+    if(existingRule) return res.status(400).json({message: 'Rule with this name already exists'});
 
     // Tokenize the rule
     const tokenizer = new Tokenizer(rule);
@@ -33,7 +37,14 @@ const createRule = async (req, res) => {
     // Save the AST to MongoDB
     const savedAST = await saveASTNode(ast);
 
-    res.json({ message: 'Rule parsed and saved!', astId: savedAST._id });
+    // Save the rule with name and reference to the AST
+    const newRule = new Rule({
+      name: name,
+      astNodeId: savedAST._id,
+    });
+    await newRule.save();
+
+    res.json({ message: 'Rule parsed and saved!', astId: savedAST._id, ruleId: newRule._id,ruleName: newRule.name });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

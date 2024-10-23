@@ -1,11 +1,37 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import logo from "./assets/logo.png";
 
+
 function App() {
-  const [count, setCount] = useState(0);
+  
+  const [newRuleName,setNewRuleName] = useState("");
+  const [newRuleString,setNewRuleString] = useState(""); 
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  
+    const handleAddRule = async (e) => {
+      e.preventDefault();
+
+      try {
+        const response = await fetch(`${backendUrl}/api/rule-engine/create-rule`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: newRuleName, rule: newRuleString }),
+        });
+        const data = await response.json();
+        console.log(data);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+  
+
 
   return (
     <div className="flex flex-col ">
@@ -22,9 +48,31 @@ function App() {
               <form class="max-w-md mx-auto">   
                 
                 <div class="relative">
-                    <input type="text" placeholder="Enter Name of Rule" class="block w-full  p-4  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" required/>
-                    <input type="text" id="addRule" class="mt-1 block w-full p-4  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Add Rule String..." required />
-                    <button type="submit" class="text-white absolute start-0 mt-2 bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Add Rule</button>
+                    <input 
+                      type="text" 
+                      onChange={(e)=>{
+                        e.preventDefault();
+                        setNewRuleName(e.target.value);
+                      }} 
+                      value={newRuleName}
+                      placeholder="Enter Name of Rule"
+                      class="block w-full  p-4  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" 
+                      required
+                     />
+
+                    <input 
+                      type="text"
+                      onChange={(e)=>{
+                        e.preventDefault();
+                        setNewRuleString(e.target.value);
+                      }}
+                      value={newRuleString}
+                      id="addRule" 
+                      class="mt-1 block w-full p-4  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
+                      placeholder="Add Rule String..." 
+                      required 
+                      />
+                    <button type="submit" onClick={handleAddRule} class="text-white absolute start-0 mt-2 bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Add Rule</button>
                 </div>
             </form>
            </div>
@@ -41,13 +89,13 @@ function App() {
 
            <div className="mt-20 relative">
               <p className="text-xl">Select Rules from the Added Rules to Combine</p>
-                <forn>
+                <form>
                   <input type="text" placeholder="Enter Name for Combined Rule" class="mt-2 block w-full  p-4  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" required/>
                   <div className="absolute start-0 mt-2 flex justify-between">
                     <button type="submit" class=" focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Evaluate</button>
 
                   </div>
-                </forn>
+                </form>
            </div> 
         </div>
 
