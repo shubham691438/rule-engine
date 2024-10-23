@@ -5,6 +5,7 @@ const combineASTs = require('../utils/combineASTs');
 const evaluateAST = require('../utils/evaluateAST');
 const mongoose = require('mongoose');
 const Rule = require('../models/RuleModel');
+const extractDataStructure = require('../utils/extractDataStructure');
 
 // Function to recursively save AST nodes to MongoDB
 const saveASTNode = async (astNode) => {
@@ -21,12 +22,15 @@ const saveASTNode = async (astNode) => {
 // Controller to parse and save AST from rule string
 const createRule = async (req, res) => {
   try {
-    const { rule, name } = req.body;
+    const { rule, name, dataStructure } = req.body;
 
-    const existingRule = await Rule.findOne({name});
-    if(existingRule) return res.status(400).json({message: 'Rule with this name already exists'});
+    // Check if a rule with the same name already exists
+    const existingRule = await Rule.findOne({ name });
+    if (existingRule) {
+      return res.status(400).json({ message: 'Rule with this name already exists' });
+    }
 
-    // Tokenize the rule
+    // Tokenize the rule string
     const tokenizer = new Tokenizer(rule);
     const tokens = tokenizer.tokenize();
 
@@ -37,14 +41,18 @@ const createRule = async (req, res) => {
     // Save the AST to MongoDB
     const savedAST = await saveASTNode(ast);
 
-    // Save the rule with name and reference to the AST
+    // Extract the required data structure from the rule (if it's not provided)
+    let extractedDataStructure = dataStructure || extractDataStructure(ast);
+
+    // Save the rule with name, reference to the AST, and the expected data structure
     const newRule = new Rule({
       name: name,
-      astNodeId: savedAST._id,
+      astNode: savedAST._id,
+      dataStructure: extractedDataStructure,
     });
     await newRule.save();
 
-    res.json({ message: 'Rule parsed and saved!', astId: savedAST._id, ruleId: newRule._id,ruleName: newRule.name });
+    res.json({ message: 'Rule parsed and saved!', rule: newRule });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -114,7 +122,13 @@ const populateASTRecursively = async (astNode) => {
 // Controller to evaluate AST based on data
 const evaluateRule = async (req, res) => {
   try {
-    const { astId, data } = req.body;  
+    const { ruleId, data } = req.body;  
+
+    const rule = await Rule.findById(ruleId).lean();
+    if (!rule) {
+      return res.status(404).json({ message: 'Rule not found' });
+    }
+    const astId = rule.astNode;
 
     // Fetch the AST by ID from MongoDB
     let ast = await ASTNode.findById(astId).lean();  
@@ -135,6 +149,15 @@ const evaluateRule = async (req, res) => {
   }
 };
 
+const getAllRules=async (req,res)=>{
+  try{
+    const rules=await Rule.find();
+    res.json(rules);
+  }catch(error){
+    res.status(500).json({error:error.message});
+  }
+}
 
 
-module.exports = {createRule, getRuleById,combineRules,evaluateRule};
+
+module.exports = {createRule, getRuleById,combineRules,evaluateRule,getAllRules};

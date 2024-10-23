@@ -5,11 +5,15 @@ const RuleSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  astNodeId: {
+  astNode: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'ASTNode',  // Referencing the ASTNode model
+    ref: 'ASTNode',
     required: true,
   },
-});
+  dataStructure: {
+    type: Object, // Define the expected structure of the data, e.g. {"age": "Number", "department": "String"}
+    required: true,
+  },
+}, { timestamps: true });
 
 module.exports = mongoose.model('Rule', RuleSchema);
