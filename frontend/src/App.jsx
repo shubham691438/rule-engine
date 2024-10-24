@@ -10,13 +10,12 @@ function App() {
   
   
   const [rules,setRules] = useState([]);
-
-  const [selectedRules, setSelectedRules] = useState([]); 
   const [loading, setLoading] = useState(false); 
   const [successMessage, setSuccessMessage] = useState(""); 
   const [errorMessage, setErrorMessage] = useState(""); 
+
+  const [selectedRules, setSelectedRules] = useState([]); 
   const [ruleToEvaluate, setRuleToEvaluate] = useState({});
-  const [combinedRuleName, setCombinedRuleName] = useState("");
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
