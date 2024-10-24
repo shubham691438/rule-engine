@@ -38,7 +38,7 @@ const CreateRule = ({setRules,rules,setSelectedRules}) => {
         console.log(data);
       } catch (error) {
         setRules([...rules]);
-        setErrorMessage(`Error creating rule : ${error.message}`);
+        setErrorMessage(` ${error.message}`);
         console.error('Error:', error);
       }
       finally {
