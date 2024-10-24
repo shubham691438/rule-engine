@@ -22,7 +22,7 @@ const saveASTNode = async (astNode) => {
 // Controller to parse and save AST from rule string
 const createRule = async (req, res) => {
   try {
-    const { rule, name, dataStructure } = req.body;
+    const { rule, name } = req.body;
 
     // Check if a rule with the same name already exists
     const existingRule = await Rule.findOne({ name });
@@ -42,7 +42,7 @@ const createRule = async (req, res) => {
     const savedAST = await saveASTNode(ast);
 
     // Extract the required data structure from the rule (if it's not provided)
-    let extractedDataStructure = dataStructure || extractDataStructure(ast);
+    let extractedDataStructure =  extractDataStructure(ast);
 
     // Save the rule with name, reference to the AST, and the expected data structure
     const newRule = new Rule({
@@ -72,25 +72,42 @@ const getRuleById = async (req, res) => {
 // Controller to combine multiple rules into a single AST
 const combineRules = async (req, res) => {
   try {
-    const { rules } = req.body;
+    const { name,rulesIds } = req.body;
+    console.log(name,rulesIds);
 
-    // Parse each rule and generate its AST
+    // Fetch all rules by their IDs
+    const rules = await Rule.find({ _id: { $in: rulesIds } });
+
+    // Extract the `astNode` IDs from each rule
+    const astNodeIds = rules.map((rule) => rule.astNode);
+    
+    // Fetch and recursively populate all AST nodes by their IDs
     const ruleASTs = await Promise.all(
-      rules.map(async (rule) => {
-        const tokenizer = new Tokenizer(rule);
-        const tokens = tokenizer.tokenize();
-        const parser = new Parser(tokens);
-        return parser.parse();
+      astNodeIds.map(async (id) => {
+        const astNode = await ASTNode.findById(id).lean();
+        return await populateASTRecursively(astNode);
       })
     );
 
     // Combine the ASTs
     const combinedAST = combineASTs(ruleASTs);
 
+
     // Save the combined AST to MongoDB
     const savedAST = await saveASTNode(combinedAST);
 
-    res.json({ message: 'Rules combined and saved!', astId: savedAST._id });
+    // Extract the required data structure from the rule 
+    let extractedDataStructure =  extractDataStructure(combinedAST);
+
+    // Save the rule with name, reference to the AST, and the expected data structure
+    const newRule = new Rule({
+      name: name,
+      astNode: savedAST._id,
+      dataStructure: extractedDataStructure,
+    });
+    await newRule.save();
+
+    res.json({ message: 'Rules combined and saved!', rule: newRule });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -123,7 +140,7 @@ const populateASTRecursively = async (astNode) => {
 const evaluateRule = async (req, res) => {
   try {
     const { ruleId, data } = req.body;  
-
+    
     const rule = await Rule.findById(ruleId).lean();
     if (!rule) {
       return res.status(404).json({ message: 'Rule not found' });
