@@ -1,7 +1,7 @@
 const ASTNode =require('../models/ASTNodeModel')
 const Tokenizer = require('../utils/tokenizer');
 const Parser = require('../utils/parser');
-const combineASTs = require('../utils/combineASTs');
+const combineASTs = require('../utils/combineAsts');
 const evaluateAST = require('../utils/evaluateAST');
 const mongoose = require('mongoose');
 const Rule = require('../models/RuleModel');
