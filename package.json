@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "start": "concurrently \"npm run start:client\" \"npm run start:server\"",
+    "start:client": "cd frontend && npm run dev",
+    "start:server": "cd backend && npm run dev",
+
+    "install":"concurrently \"npm run install-all:client\" \"npm run install-all:server\"",
+    "install-all:client": "cd frontend && npm install",
+    "install-all:server": "cd backend && npm install"
+  },
+  "dependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
