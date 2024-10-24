@@ -3,7 +3,7 @@ import "./App.css";
 import logo from "./assets/logo.png";
 import DynamicForm from "./components/DynamicForm";
 import CreateRule from "./components/CreateRule";
-
+import CombineRules from "./components/CombineRules";
 
 
 function App() {
@@ -62,35 +62,7 @@ function App() {
       }
   }, [selectedRules]);    
 
-  const handleCombineRules = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
-
-    try {
-      const response = await fetch(`${backendUrl}/api/rule-engine/combine-rules`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: combinedRuleName, rulesIds: selectedRules }),
-      });
-      const data = await response.json();
-
-      if(!data.rule) return setErrorMessage("Error combining rules.");
-      setRules([data.rule, ...rules]);
-      setCombinedRuleName("");
-      setSuccessMessage("Rules combined successfully!");
-      console.log(data);
-    } catch (error) {
-      setErrorMessage("Error combining rules.");
-      console.error('Error:', error);
-    }
-    finally {
-      setLoading(false);
-  }
-}
+  
 
   return (
     <div className="flex flex-col ">
@@ -105,38 +77,22 @@ function App() {
         <div>
            
             <CreateRule setRules={setRules} rules={rules} setSelectedRules={setSelectedRules}/>
-           <div className="mt-20 relative">
-              <p className="text-xl">Select One Rule from the Created Rules to Evaluate</p>
-              {
-                // Check if a valid rule has been selected
-                ruleToEvaluate && ruleToEvaluate.dataStructure && (
-                  <DynamicForm 
-                    dataStructure={ruleToEvaluate.dataStructure}
-                    ruleId={ruleToEvaluate._id} 
+            <div className="mt-20 relative">
+                  <p className="text-xl">Select One Rule from the Created Rules to Evaluate</p>
+                  {
+                    // Check if a valid rule has been selected
+                    ruleToEvaluate && ruleToEvaluate.dataStructure && (
+                      <DynamicForm 
+                        dataStructure={ruleToEvaluate.dataStructure}
+                        ruleId={ruleToEvaluate._id} 
 
-                  />
-                )
-             }
-              
-           </div> 
+                      />
+                    )
+                }  
+            </div> 
+            <CombineRules setRules={setRules} rules={rules} selectedRules={selectedRules} setSelectedRules={setSelectedRules}/>
 
-           <div className="mt-20 relative">
-              <p className="text-xl">Select Rules from the Created Rules to Combine</p>
-                <form>
-
-                  <input type="text" onChange={
-                    (e)=>{
-                      e.preventDefault();
-                      setCombinedRuleName(e.target.value);
-                    }
-                  } 
-                  placeholder="Enter Name for Combined Rule" className="mt-2 block w-full  p-4  text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" required/>
-                  <div className="absolute start-0 mt-2 flex justify-between">
-                    <button onClick={handleCombineRules} type="submit" className=" focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Combine</button>
-
-                  </div>
-                </form>
-           </div> 
+           
         </div>
 
         <div>
