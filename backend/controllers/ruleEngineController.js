@@ -73,7 +73,13 @@ const getRuleById = async (req, res) => {
 const combineRules = async (req, res) => {
   try {
     const { name,rulesIds } = req.body;
-    console.log(name,rulesIds);
+    
+
+    // // Check if a rule with the same name already exists
+    // const existingRule = await Rule.findOne({ name });
+    // if (existingRule) {
+    //   return res.status(400).json({ message: 'Rule with this name already exists' });
+    // }
 
     // Fetch all rules by their IDs
     const rules = await Rule.find({ _id: { $in: rulesIds } });
